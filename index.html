@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telegram Reward Bot</title>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#f2f2f7;
+padding-bottom:90px;
+}
+
+/* HEADER */
+.header{
+padding:20px;
+display:flex;
+align-items:center;
+gap:15px;
+background:#fff;
+border-bottom:1px solid #ddd;
+overflow:hidden;
+}
+
+.avatar{
+width:65px;
+height:65px;
+border-radius:50%;
+border:3px solid #0d6efd;
+object-fit:cover;
+flex-shrink:0;
+background:#fff;
+}
+
+.user-info{
+flex:1;
+min-width:0;
+overflow:hidden;
+}
+
+.user-info h2{
+display:inline-flex;
+align-items:center;
+gap:4px;
+font-weight:bold;
+line-height:1.2;
+width:auto;
+max-width:100%;
+}
+
+#userName{
+display:inline;
+white-space:nowrap;
+font-size:clamp(13px,5vw,22px);
+overflow:hidden;
+text-overflow:ellipsis;
+}
+
+.tick{
+background:#0d6efd;
+color:#fff;
+width:20px;
+height:20px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:11px;
+flex-shrink:0;
+margin-left:0;
+}
+
+.page{
+display:none;
+padding:20px;
+}
+
+.active{
+display:block;
+}
+
+.title{
+font-size:28px;
+font-weight:bold;
+margin-bottom:25px;
+}
+
+.dashboard{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:15px;
+margin-bottom:25px;
+}
+
+/* YELLOW BOX */
+.card{
+background:#ffd84d;
+border-radius:20px;
+padding:25px;
+box-shadow:0 2px 10px rgba(0,0,0,0.05);
+text-align:center;
+}
+
+.card h3{
+font-size:16px;
+color:#333;
+margin-bottom:15px;
+}
+
+.card p{
+font-size:24px;
+font-weight:bold;
+color:#000;
+}
+
+.big-card{
+background:#fff;
+border-radius:20px;
+padding:25px;
+box-shadow:0 2px 10px rgba(0,0,0,0.05);
+margin-bottom:20px;
+}
+
+.big-card h2{
+font-size:42px;
+margin-bottom:10px;
+}
+
+.big-card p{
+font-size:24px;
+color:#666;
+margin-bottom:20px;
+}
+
+.ref-box{
+width:100%;
+padding:18px;
+border:2px dashed #0d6efd;
+border-radius:15px;
+font-size:20px;
+margin-bottom:20px;
+}
+
+.btn{
+width:100%;
+padding:16px;
+background:#0d6efd;
+color:#fff;
+border:none;
+border-radius:15px;
+font-size:22px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.task-card{
+background:#fff;
+border-radius:20px;
+padding:20px;
+margin-bottom:15px;
+text-align:center;
+box-shadow:0 2px 10px rgba(0,0,0,0.05);
+}
+
+.task-icon{
+font-size:55px;
+margin-bottom:10px;
+}
+
+.task-card h2{
+font-size:26px;
+margin-bottom:15px;
+}
+
+.input-box{
+width:100%;
+padding:18px;
+border:2px solid #ddd;
+border-radius:15px;
+font-size:22px;
+margin-bottom:20px;
+background:#fff;
+}
+
+.note{
+font-size:24px;
+margin-bottom:20px;
+line-height:1.5;
+}
+
+/* GREEN NAVBAR */
+.bottom-nav{
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+background:#28a745;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:6px 8px;
+border-top:none;
+box-shadow:0 -2px 8px rgba(0,0,0,0.08);
+gap:8px;
+}
+
+/* SMALL WHITE SHAPES */
+.nav-btn{
+background:#fff;
+border:none;
+border-radius:10px;
+font-size:14px;
+font-weight:bold;
+color:#28a745;
+cursor:pointer;
+padding:7px 10px;
+min-width:90px;
+height:38px;
+display:flex;
+align-items:center;
+justify-content:center;
+transition:0.2s;
+}
+
+/* ACTIVE BUTTON */
+.nav-btn.active-nav{
+background:#fff;
+color:#28a745;
+box-shadow:0 0 0 2px rgba(255,255,255,0.4);
+}
+
+@media(max-width:600px){
+
+.title{
+font-size:28px;
+}
+
+.big-card h2{
+font-size:28px;
+}
+
+.card p{
+font-size:28px;
+}
+
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+
+<img id="userPhoto" src="https://i.ibb.co/2kR6zq7/user.png" class="avatar">
+
+<div class="user-info">
+<h2>
+<span id="userName">Telegram User</span>
+<span class="tick">✔</span>
+</h2>
+</div>
+
+</div>
+
+<!-- HOME PAGE -->
+<div class="page active" id="homePage">
+
+<div class="title">Dashboard</div>
+
+<div class="dashboard">
+
+<div class="card">
+<h3>Daily Ads Watched</h3>
+<p id="adsWatched">0</p>
+</div>
+
+<div class="card">
+<h3>Total Referrals</h3>
+<p id="totalReferrals">0</p>
+</div>
+
+</div>
+
+<div class="big-card">
+
+<h2>Refer & Earn More!</h2>
+
+<p>Share your link to get bonus points.</p>
+
+<input type="text" class="ref-box" id="refLink" readonly>
+
+<button class="btn" onclick="copyReferral()">
+Copy Referral Link
+</button>
+
+</div>
+
+</div>
+
+<!-- TASK PAGE -->
+<div class="page" id="taskPage">
+
+<div class="title">Complete Tasks</div>
+
+<div class="task-card">
+
+<div class="task-icon">🎬</div>
+
+<h2>Watch a Rewarded Ad</h2>
+
+<button class="btn" onclick="watchAd()">
+Watch Ad
+</button>
+
+</div>
+
+<div class="task-card">
+
+<div class="task-icon">📢</div>
+
+<h2>Join Our Channel</h2>
+
+<button class="btn" onclick="joinChannel()">
+Join & Claim Bonus
+</button>
+
+</div>
+
+</div>
+
+<!-- WITHDRAW PAGE -->
+<div class="page" id="withdrawPage">
+
+<div class="title">Withdraw Point</div>
+
+<div class="big-card">
+
+<p class="note">
+Minimum 1 point required to withdraw.
+</p>
+
+<input type="text" id="withdrawName" class="input-box" placeholder="Your Name">
+
+<input type="number" id="withdrawPoint" class="input-box" placeholder="Point">
+
+<button class="btn" onclick="submitWithdraw()">
+Submit Request
+</button>
+
+</div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+
+<button class="nav-btn active-nav" onclick="showPage('homePage',this)">
+🏠 Home
+</button>
+
+<button class="nav-btn" onclick="showPage('taskPage',this)">
+📋 Tasks
+</button>
+
+<button class="nav-btn" onclick="showPage('withdrawPage',this)">
+💳 Withdraw
+</button>
+
+</div>
+
+<script>
+
+// ================= SETTINGS =================
+
+const BOT_USERNAME = "@Trusrtbot_bot";
+
+const CHANNEL_LINK = "https://t.me/+kbnEkRZT0i5iNWI1";
+
+const BOT_TOKEN = "8946613256:AAGxvG_o3okq-CrxqZEBqcmZf8m_5ST8x0os";
+
+const ADMIN_CHAT_ID = "6301865935";
+
+/* CHANGE ONLY THIS ADS PARK ZONE ID */
+const ADSPARK_ZONE_ID = "40";
+
+// ============================================
+
+// LOAD ADSPARK SDK USING THE ZONE ID ABOVE
+const adsparkScript = document.createElement("script");
+adsparkScript.src = `https://adspark-tma.top/api/public/sdk.js?k=${encodeURIComponent(ADSPARK_ZONE_ID)}`;
+adsparkScript.async = true;
+document.head.appendChild(adsparkScript);
+
+
+// TELEGRAM WEB APP
+const tg = window.Telegram.WebApp;
+tg.expand();
+
+// Optional AdSpark warm-up; the SDK may not expose ready() in every version.
+window.addEventListener("load", () => {
+  if (window.AdSpark && typeof window.AdSpark.ready === "function") {
+    window.AdSpark.ready().catch(err => console.log("AdSpark warm-up skipped:", err));
+  }
+});
+
+// USER
+let user = tg.initDataUnsafe?.user;
+
+if(!user){
+
+user = {
+first_name:"Telegram",
+last_name:"User",
+id:Math.floor(Math.random()*999999)
+};
+
+}
+
+const userId = user.id;
+
+/* FULL TELEGRAM NAME */
+const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+
+const userName = fullName || "Telegram User";
+
+// SHOW FULL USER NAME
+document.getElementById("userName").innerText = userName;
+
+/* AUTO TELEGRAM PROFILE PHOTO */
+if(user.photo_url){
+
+document.getElementById("userPhoto").src = user.photo_url;
+
+}
+
+// STORAGE KEYS
+const balanceKey = `balance_${userId}`;
+const adKey = `ads_${userId}`;
+const refKey = `ref_${userId}`;
+const joinedKey = `joined_${userId}`;
+
+// LOAD DATA
+let balance = parseInt(localStorage.getItem(balanceKey)) || 0;
+
+let adsWatched = parseInt(localStorage.getItem(adKey)) || 0;
+
+let referrals = parseInt(localStorage.getItem(refKey)) || 0;
+
+// UPDATE UI
+function updateUI(){
+
+document.getElementById("adsWatched").innerText = adsWatched;
+
+document.getElementById("totalReferrals").innerText = referrals;
+
+}
+
+updateUI();
+
+// SAVE DATA
+function saveData(){
+
+localStorage.setItem(balanceKey,balance);
+
+localStorage.setItem(adKey,adsWatched);
+
+localStorage.setItem(refKey,referrals);
+
+updateUI();
+
+}
+
+// REF LINK
+const refLink = `https://t.me/${BOT_USERNAME}?startapp=ref_${userId}`;
+
+document.getElementById("refLink").value = refLink;
+
+// COPY REF
+function copyReferral(){
+
+navigator.clipboard.writeText(refLink);
+
+alert("Referral link copied!");
+
+}
+
+// PAGE SWITCH
+function showPage(pageId,btn){
+
+document.querySelectorAll('.page').forEach(p=>{
+p.classList.remove('active');
+});
+
+document.getElementById(pageId).classList.add('active');
+
+document.querySelectorAll('.nav-btn').forEach(b=>{
+b.classList.remove('active-nav');
+});
+
+btn.classList.add('active-nav');
+
+}
+
+// WATCH AD — REWARD ONLY AFTER ADSPARK CONFIRMS COMPLETION
+let adLoading = false;
+
+async function watchAd(){
+
+if(adLoading){
+return;
+}
+
+const tgApp = window.Telegram?.WebApp;
+const adsparkUserId = tgApp?.initDataUnsafe?.user?.id;
+
+if(typeof window.showAdspark !== "function"){
+alert("AdSpark লোড হচ্ছে। কয়েক সেকেন্ড পরে আবার চেষ্টা করুন।");
+return;
+}
+
+if(!adsparkUserId){
+alert("Telegram user ID পাওয়া যায়নি। বটের Telegram Mini App থেকে খুলুন।");
+return;
+}
+
+adLoading = true;
+
+try {
+  await window.showAdspark({ ymid: adsparkUserId });
+
+  // AdSpark resolved successfully: count the completed rewarded ad.
+  balance += 5;
+  adsWatched += 1;
+  saveData();
+} catch (error) {
+  // No ad / ad not completed: do not grant a reward.
+  alert("এই মুহূর্তে বিজ্ঞাপন পাওয়া যায়নি বা বিজ্ঞাপন সম্পন্ন হয়নি। পরে আবার চেষ্টা করুন।");
+  console.log("AdSpark ad unavailable or incomplete:", error);
+} finally {
+  adLoading = false;
+}
+
+}
+
+// JOIN CHANNEL
+function joinChannel(){
+
+window.open(CHANNEL_LINK,'_blank');
+
+if(!localStorage.getItem(joinedKey)){
+
+balance += 1;
+
+adsWatched += 1;
+
+saveData();
+
+localStorage.setItem(joinedKey,'yes');
+
+alert("1 bonus point added!");
+
+}
+
+}
+
+// WITHDRAW
+async function submitWithdraw(){
+
+const name = document.getElementById("withdrawName").value;
+
+const point = parseInt(document.getElementById("withdrawPoint").value);
+
+if(!name || !point){
+
+alert("Please fill all fields");
+
+return;
+
+}
+
+if(point < 1){
+
+alert("Minimum withdraw is 1 point");
+
+return;
+
+}
+
+if(adsWatched <= 0){
+
+alert("No Daily Ads Watched point available");
+
+return;
+
+}
+
+if(point > adsWatched){
+
+alert("Not enough Daily Ads Watched points");
+
+return;
+
+}
+
+if(point > balance){
+
+alert("Insufficient balance");
+
+return;
+
+}
+
+alert("Withdraw request submitted successfully!");
+
+balance -= point;
+
+adsWatched -= point;
+
+if(adsWatched < 0){
+adsWatched = 0;
+}
+
+saveData();
+
+document.getElementById("withdrawName").value='';
+
+document.getElementById("withdrawPoint").value='';
+
+const message = `
+📥 New Withdraw Request
+
+👤 Name: ${name}
+🆔 User ID: ${userId}
+💰 Point: ${point}
+👨‍💻 Username: ${userName}
+`;
+
+fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,{
+
+method:'POST',
+
+headers:{
+'Content-Type':'application/json'
+},
+
+body:JSON.stringify({
+
+chat_id:ADMIN_CHAT_ID,
+
+text:message
+
+})
+
+})
+.catch(err=>{
+
+console.log(err);
+
+});
+
+}
+
+/* WORKING REFERRAL SYSTEM */
+
+function getQueryParam(name){
+
+const url = new URL(window.location.href);
+
+return url.searchParams.get(name);
+
+}
+
+const ref = getQueryParam("startapp") || getQueryParam("start");
+
+if(ref && ref.startsWith("ref_")){
+
+const referrerId = ref.replace("ref_","");
+
+if(referrerId != userId){
+
+const joinKey = `joined_ref_${referrerId}_${userId}`;
+
+if(!localStorage.getItem(joinKey)){
+
+const refStorage = `ref_${referrerId}`;
+
+let currentRef = parseInt(localStorage.getItem(refStorage)) || 0;
+
+currentRef += 1;
+
+localStorage.setItem(refStorage,currentRef);
+
+localStorage.setItem(joinKey,"done");
+
+}
+
+}
+
+}
+
+// LIVE UPDATE REFERRAL
+referrals = parseInt(localStorage.getItem(refKey)) || 0;
+
+updateUI();
+
+</script>
+
+</body>
+</html>
