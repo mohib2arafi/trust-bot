@@ -321,41 +321,66 @@
     const CHANNEL_LINK = "https://t.me/+kbnEkRZT0i5iNWI1";
     const BOT_TOKEN = "8946613256:AAGxvG_o3okq-CrxqZEBqcmZf8m_5ST8x0os";
     const ADMIN_CHAT_ID = "6301865935";
-
     const ADSPARK_ZONE_ID = "63";
 
-    const adsparkScript = document.createElement("script");
-    adsparkScript.src = `https://adspark-tma.top/api/public/sdk.js?k=${encodeURIComponent(ADSPARK_ZONE_ID)}`;
-    adsparkScript.async = true;
-    document.head.appendChild(adsparkScript);
-
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-
-    window.addEventListener("load", () => {
-      if (window.AdSpark && typeof window.AdSpark.ready === "function") {
-        window.AdSpark.ready().catch(err => console.log("AdSpark warm-up skipped:", err));
-      }
-    });
-
-    let user = tg.initDataUnsafe?.user;
-
-    if (!user) {
-      user = {
+    const appState = {
+      user: {
+        id: Date.now() + Math.floor(Math.random() * 100000),
         first_name: "Telegram",
-        last_name: "User",
-        id: Math.floor(Math.random() * 999999)
-      };
+        last_name: "User"
+      },
+      tg: null
+    };
+
+    function safeSetText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.innerText = value;
     }
 
-    const userId = user.id;
-    const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+    function safeSetValue(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.value = value;
+    }
+
+    function getUserId() {
+      if (appState.tg && appState.tg.initDataUnsafe && appState.tg.initDataUnsafe.user) {
+        return appState.tg.initDataUnsafe.user.id;
+      }
+      return appState.user.id;
+    }
+
+    function initTelegram() {
+      try {
+        appState.tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+
+        if (appState.tg) {
+          appState.tg.expand();
+
+          const tgUser = appState.tg.initDataUnsafe && appState.tg.initDataUnsafe.user;
+          if (tgUser) {
+            appState.user = {
+              ...appState.user,
+              ...tgUser
+            };
+          }
+        }
+      } catch (error) {
+        console.log("Telegram init failed:", error);
+        appState.tg = null;
+      }
+    }
+
+    initTelegram();
+
+    const userId = getUserId();
+    const fullName = `${appState.user.first_name || ""} ${appState.user.last_name || ""}`.trim();
     const userName = fullName || "Telegram User";
 
-    document.getElementById("userName").innerText = userName;
+    safeSetText("userName", userName);
 
-    if (user.photo_url) {
-      document.getElementById("userPhoto").src = user.photo_url;
+    if (appState.user.photo_url) {
+      const photo = document.getElementById("userPhoto");
+      if (photo) photo.src = appState.user.photo_url;
     }
 
     const balanceKey = `balance_${userId}`;
@@ -368,21 +393,21 @@
     let referrals = parseInt(localStorage.getItem(refKey)) || 0;
 
     function updateUI() {
-      document.getElementById("adsWatched").innerText = adsWatched;
-      document.getElementById("totalReferrals").innerText = referrals;
+      safeSetText("adsWatched", adsWatched);
+      safeSetText("totalReferrals", referrals);
     }
 
     updateUI();
 
     function saveData() {
-      localStorage.setItem(balanceKey, balance);
-      localStorage.setItem(adKey, adsWatched);
-      localStorage.setItem(refKey, referrals);
+      localStorage.setItem(balanceKey, String(balance));
+      localStorage.setItem(adKey, String(adsWatched));
+      localStorage.setItem(refKey, String(referrals));
       updateUI();
     }
 
     const refLink = `https://t.me/${BOT_USERNAME}?startapp=ref_${userId}`;
-    document.getElementById("refLink").value = refLink;
+    safeSetValue("refLink", refLink);
 
     function copyReferral() {
       try {
@@ -395,10 +420,11 @@
 
     function showPage(pageId, btn) {
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-      document.getElementById(pageId).classList.add("active");
+      const page = document.getElementById(pageId);
+      if (page) page.classList.add("active");
 
       document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active-nav"));
-      btn.classList.add("active-nav");
+      if (btn) btn.classList.add("active-nav");
     }
 
     let adLoading = false;
@@ -406,13 +432,14 @@
     async function watchAd() {
       if (adLoading) return;
 
-      const tgApp = window.Telegram?.WebApp;
-      const adsparkUserId = tgApp?.initDataUnsafe?.user?.id;
-
       if (typeof window.showAdspark !== "function") {
         alert("AdSpark লোড হচ্ছে। কয়েক সেকেন্ড পরে আবার চেষ্টা করুন।");
         return;
       }
+
+      const adsparkUserId = appState.tg && appState.tg.initDataUnsafe && appState.tg.initDataUnsafe.user
+        ? appState.tg.initDataUnsafe.user.id
+        : null;
 
       if (!adsparkUserId) {
         alert("Telegram user ID পাওয়া যায়নি। বটের Telegram Mini App থেকে খুলুন।");
@@ -511,19 +538,37 @@
           let currentRef = parseInt(localStorage.getItem(refStorage)) || 0;
           currentRef += 1;
           referrals = currentRef;
-          localStorage.setItem(refStorage, currentRef);
+          localStorage.setItem(refStorage, String(currentRef));
           localStorage.setItem(joinKey, "done");
 
           const referrerBalanceKey = `balance_${referrerId}`;
           const referrerBalance = parseInt(localStorage.getItem(referrerBalanceKey)) || 0;
-          localStorage.setItem(referrerBalanceKey, referrerBalance + 5);
+          localStorage.setItem(referrerBalanceKey, String(referrerBalance + 5));
         }
       }
     }
 
-    referrals = parseInt(localStorage.getItem(refKey)) || 0;
     balance = parseInt(localStorage.getItem(balanceKey)) || 0;
+    adsWatched = parseInt(localStorage.getItem(adKey)) || 0;
+    referrals = parseInt(localStorage.getItem(refKey)) || 0;
     updateUI();
+
+    if (appState.tg) {
+      try {
+        const adsparkScript = document.createElement("script");
+        adsparkScript.src = `https://adspark-tma.top/api/public/sdk.js?k=${encodeURIComponent(ADSPARK_ZONE_ID)}`;
+        adsparkScript.async = true;
+        document.head.appendChild(adsparkScript);
+
+        window.addEventListener("load", () => {
+          if (window.AdSpark && typeof window.AdSpark.ready === "function") {
+            window.AdSpark.ready().catch(err => console.log("AdSpark warm-up skipped:", err));
+          }
+        });
+      } catch (error) {
+        console.log("AdSpark setup failed:", error);
+      }
+    }
   </script>
 </body>
 </html>
