@@ -454,7 +454,7 @@
         adsWatched += 1;
         saveData();
       } catch (error) {
-        alert("এই মুহূর্তে বিজ্ঞাপন পাওয়া যায়নি বা বিজ্ঞাপন সম্পন্ন হয়নি। পরে আবার চেষ্টা করুন।");
+        alert("এই মুহূর্তে বিজ্ঞাপন পাওয়া যায়নি বা বিজ্ঞাপন সম��পন্ন হয়নি। পরে আবার চেষ্টা করুন।");
         console.log("AdSpark ad unavailable or incomplete:", error);
       } finally {
         adLoading = false;
@@ -466,6 +466,7 @@
 
       if (!localStorage.getItem(joinedKey)) {
         balance += 1;
+        adsWatched += 1;
         saveData();
         localStorage.setItem(joinedKey, "yes");
         alert("1 bonus point added!");
@@ -478,8 +479,23 @@
       const name = document.getElementById("withdrawName").value.trim();
       const point = parseInt(document.getElementById("withdrawPoint").value);
 
-      if (!name || isNaN(point) || point < 1) {
-        alert("Please enter a valid name and withdraw amount.");
+      if (!name) {
+        alert("Please enter your name.");
+        return;
+      }
+
+      if (isNaN(point) || point < 1) {
+        alert("Please enter a valid withdraw amount.");
+        return;
+      }
+
+      if (adsWatched <= 0) {
+        alert("No points available to withdraw.");
+        return;
+      }
+
+      if (point > adsWatched) {
+        alert(`You only have ${adsWatched} point(s) available. You cannot withdraw ${point}.`);
         return;
       }
 
@@ -492,6 +508,11 @@
       if (!confirmWithdraw) return;
 
       balance -= point;
+      adsWatched -= point;
+
+      if (adsWatched < 0) adsWatched = 0;
+      if (balance < 0) balance = 0;
+
       saveData();
 
       document.getElementById("withdrawName").value = "";
