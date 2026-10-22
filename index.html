@@ -390,7 +390,7 @@ const BOT_TOKEN = "8946613256:AAGxvG_o3okq-CrxqZEBqcmZf8m_5ST8x0os";
 const ADMIN_CHAT_ID = "6301865935";
 
 /* CHANGE ONLY THIS ADS PARK ZONE ID */
-const ADSPARK_ZONE_ID = "40";
+const ADSPARK_ZONE_ID = "63";
 
 // ============================================
 
@@ -497,13 +497,13 @@ alert("Referral link copied!");
 function showPage(pageId,btn){
 
 document.querySelectorAll('.page').forEach(p=>{
-p.classList.remove('active');
+ p.classList.remove('active');
 });
 
 document.getElementById(pageId).classList.add('active');
 
 document.querySelectorAll('.nav-btn').forEach(b=>{
-b.classList.remove('active-nav');
+ b.classList.remove('active-nav');
 });
 
 btn.classList.add('active-nav');
@@ -683,7 +683,7 @@ const ref = getQueryParam("startapp") || getQueryParam("start");
 
 if(ref && ref.startsWith("ref_")){
 
-const referrerId = ref.replace("ref_","");
+const referrerId = ref.replace("ref_",
 
 if(referrerId != userId){
 
