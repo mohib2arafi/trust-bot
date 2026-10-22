@@ -683,7 +683,7 @@ const ref = getQueryParam("startapp") || getQueryParam("start");
 
 if(ref && ref.startsWith("ref_")){
 
-const referrerId = ref.replace("ref_",
+const referrerId = ref.replace("ref_", "");
 
 if(referrerId != userId){
 
